@@ -10,7 +10,15 @@ from app.api.deps import get_current_user, get_farm_or_404
 from app.core.database import get_db
 from app.core.errors import APIError, bad_request, not_found
 from app.db.models import Alert, Farm, User
-from app.schemas.farms import FarmCreate, FarmDetail, FarmListResponse, FarmUpdate
+from app.schemas.farms import (
+    FarmCreate,
+    FarmDetail,
+    FarmListResponse,
+    FarmUpdate,
+    GeocodeResponse,
+    GeocodeResult,
+)
+from app.services.geo import search_locations
 from app.services.intelligence.alerts import refresh_alerts, sort_alerts
 from app.services.intelligence.bundle import (
     build_farm_bundles,
@@ -47,6 +55,16 @@ def create_farm(
     db.commit()
     db.refresh(farm)
     return _summary(farm)
+
+
+@router.get("/geocode", response_model=GeocodeResponse)
+async def geocode_locations(
+    q: str = "",
+    user: User = Depends(get_current_user),
+) -> GeocodeResponse:
+    """Location search for the Add Farm form (Open-Meteo geocoding)."""
+    results = await search_locations(q)
+    return GeocodeResponse(results=[GeocodeResult(**r) for r in results])
 
 
 @router.get("/{farm_id}", response_model=FarmDetail)

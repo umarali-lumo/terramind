@@ -11,14 +11,29 @@ from app.core.config import get_settings
 
 settings = get_settings()
 
+
+def _resolve_url(url: str) -> str:
+    """Normalize plain postgresql:// URLs to the psycopg 3 dialect.
+
+    Hosted Postgres providers (Neon, Supabase, …) hand out connection
+    strings without a driver suffix; SQLAlchemy would otherwise default
+    to the legacy psycopg2 dialect, which is not installed.
+    """
+    if url.startswith("postgresql://"):
+        return url.replace("postgresql://", "postgresql+psycopg://", 1)
+    return url
+
+
+DATABASE_URL = _resolve_url(settings.database_url)
+
 connect_args = (
     {"check_same_thread": False}
-    if settings.database_url.startswith("sqlite")
+    if DATABASE_URL.startswith("sqlite")
     else {}
 )
 
 engine = create_engine(
-    settings.database_url,
+    DATABASE_URL,
     connect_args=connect_args,
     pool_pre_ping=True,
 )
@@ -34,7 +49,7 @@ SessionLocal = sessionmaker(
 @event.listens_for(engine, "connect")
 def _set_sqlite_pragma(dbapi_connection, connection_record):  # noqa: ANN001
     """Enable foreign-key enforcement on SQLite connections."""
-    if settings.database_url.startswith("sqlite"):
+    if DATABASE_URL.startswith("sqlite"):
         cursor = dbapi_connection.cursor()
         cursor.execute("PRAGMA foreign_keys=ON")
         cursor.close()

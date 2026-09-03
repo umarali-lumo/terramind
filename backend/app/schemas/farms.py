@@ -39,3 +39,18 @@ class FarmDetail(FarmSummary):
 
 class FarmListResponse(BaseModel):
     farms: list[FarmSummary]
+
+
+class GeocodeResult(BaseModel):
+    """A place resolved by location search (Open-Meteo geocoding)."""
+
+    name: str
+    admin1: str | None = None
+    country: str | None = None
+    latitude: float
+    longitude: float
+    label: str
+
+
+class GeocodeResponse(BaseModel):
+    results: list[GeocodeResult] = []

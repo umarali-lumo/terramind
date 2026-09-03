@@ -2,7 +2,7 @@
 
 /** Settings — profile, farm management and platform information. */
 
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
@@ -10,7 +10,9 @@ import {
   FlaskConical,
   Globe,
   Leaf,
+  Loader2,
   LogOut,
+  MapPin,
   Trash2,
   UserRound,
 } from "lucide-react";
@@ -30,8 +32,117 @@ const inputClass =
 
 const labelClass = "mb-1.5 block text-xs font-medium text-moss-300";
 
+interface GeocodeResult {
+  name: string;
+  admin1: string | null;
+  country: string | null;
+  latitude: number;
+  longitude: number;
+  label: string;
+}
+
+function useDebounced<T>(value: T, delayMs: number): T {
+  const [debounced, setDebounced] = useState(value);
+  useEffect(() => {
+    const timer = setTimeout(() => setDebounced(value), delayMs);
+    return () => clearTimeout(timer);
+  }, [value, delayMs]);
+  return debounced;
+}
+
+/** Location input with live place search (Open-Meteo geocoding via the API). */
+function LocationSearch({
+  value,
+  onChange,
+  onSelect,
+}: {
+  value: string;
+  onChange: (value: string) => void;
+  onSelect: (place: GeocodeResult) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [selected, setSelected] = useState<string | null>(null);
+  const debounced = useDebounced(value.trim(), 350);
+  const searchable = debounced.length >= 2 && debounced !== selected;
+
+  const { data, isFetching } = useQuery({
+    queryKey: ["geocode", debounced],
+    queryFn: () =>
+      api<{ results: GeocodeResult[] }>("/api/v1/farms/geocode", {
+        query: { q: debounced },
+      }),
+    enabled: searchable,
+    staleTime: 300_000,
+  });
+
+  const results = searchable ? (data?.results ?? []) : [];
+
+  function handleSelect(place: GeocodeResult) {
+    setSelected(place.label);
+    onChange(place.label);
+    onSelect(place);
+    setOpen(false);
+  }
+
+  return (
+    <div className="relative">
+      <input
+        id="farmLocation"
+        autoComplete="off"
+        value={value}
+        onChange={(e) => {
+          onChange(e.target.value);
+          setSelected(null);
+          setOpen(true);
+        }}
+        onFocus={() => setOpen(true)}
+        onBlur={() => setOpen(false)}
+        placeholder="Search a place — e.g. Karachi"
+        className={inputClass}
+      />
+      {open && searchable ? (
+        <div className="absolute z-20 mt-1 w-full overflow-hidden rounded-xl border border-canopy-600/70 bg-canopy-900 shadow-xl shadow-black/40">
+          {isFetching ? (
+            <p className="flex items-center gap-2 px-3 py-2.5 text-xs text-moss-400">
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              Searching places…
+            </p>
+          ) : results.length === 0 ? (
+            <p className="px-3 py-2.5 text-xs text-moss-400">
+              No matching places — try another name.
+            </p>
+          ) : (
+            <ul className="max-h-56 overflow-y-auto">
+              {results.map((place) => (
+                <li key={`${place.label}-${place.latitude}`}>
+                  <button
+                    type="button"
+                    onMouseDown={(e) => e.preventDefault()}
+                    onClick={() => handleSelect(place)}
+                    className="flex w-full items-start gap-2 px-3 py-2 text-left text-xs hover:bg-canopy-800"
+                  >
+                    <MapPin className="mt-0.5 h-3.5 w-3.5 shrink-0 text-sprout-400" />
+                    <span>
+                      <span className="font-medium text-moss-100">{place.name}</span>
+                      <span className="block text-moss-400">
+                        {[place.admin1, place.country].filter(Boolean).join(", ")}
+                      </span>
+                    </span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
 function CreateFarmForm() {
   const queryClient = useQueryClient();
+  const { user } = useAuth();
+  const { setFarmId } = useFarm();
   const [name, setName] = useState("");
   const [location, setLocation] = useState("");
   const [lat, setLat] = useState("31.4500");
@@ -41,7 +152,16 @@ function CreateFarmForm() {
   const createFarm = useMutation({
     mutationFn: (payload: Record<string, unknown>) =>
       api<Farm>("/api/v1/farms", { method: "POST", body: payload }),
-    onSuccess: () => {
+    onSuccess: (farm) => {
+      // Register the new farm in the cache before switching to it, so the
+      // farm selector (and New Field) point at the farm that was just created
+      // even while the list refetch is still in flight.
+      queryClient.setQueryData(
+        ["farms", user?.id],
+        (old: { farms: Farm[] } | undefined) =>
+          old ? { farms: [...old.farms, farm] } : { farms: [farm] },
+      );
+      setFarmId(farm.id);
       queryClient.invalidateQueries({ queryKey: ["farms"] });
       setName("");
       setLocation("");
@@ -87,12 +207,14 @@ function CreateFarmForm() {
         <label htmlFor="farmLocation" className={labelClass}>
           Location
         </label>
-        <input
-          id="farmLocation"
+        <LocationSearch
           value={location}
-          onChange={(e) => setLocation(e.target.value)}
-          placeholder="Lahore District, Punjab, Pakistan"
-          className={inputClass}
+          onChange={setLocation}
+          onSelect={(place) => {
+            setLocation(place.label);
+            setLat(String(place.latitude));
+            setLng(String(place.longitude));
+          }}
         />
       </div>
       <div className="grid grid-cols-2 gap-3">

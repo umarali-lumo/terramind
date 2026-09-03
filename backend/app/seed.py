@@ -8,6 +8,7 @@ sensor nodes and alerts. Runs idempotently.
 from __future__ import annotations
 
 import sys
+import time
 from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
 
@@ -350,4 +351,15 @@ def seed() -> None:
 
 
 if __name__ == "__main__":
-    seed()
+    # On container/serverless starts, several instances may race to seed a
+    # fresh shared database at once. The seed runs as one transaction, so a
+    # lost race rolls back cleanly — retrying then finds the winner's data.
+    for attempt in range(3):
+        try:
+            seed()
+            break
+        except Exception:
+            if attempt == 2:
+                raise
+            print(f"Seed attempt {attempt + 1} failed — retrying in 3s ...")
+            time.sleep(3)

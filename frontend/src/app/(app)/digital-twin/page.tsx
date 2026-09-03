@@ -39,7 +39,7 @@ function toneForValue(layer: Layer, value: number): MapField["tone"] {
 export default function DigitalTwinPage() {
   const { farm, farmId } = useFarm();
   const [layer, setLayer] = useState<Layer>("health");
-  const [basemap, setBasemap] = useState<"dark" | "satellite">("dark");
+  const [basemap, setBasemap] = useState<"dark" | "satellite">("satellite");
   const [selectedId, setSelectedId] = useState<number | null>(null);
 
   const { data, isLoading, isError, error, refetch } = useQuery({

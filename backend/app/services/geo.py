@@ -2,9 +2,64 @@
 
 from __future__ import annotations
 
+import logging
 import math
 
+import httpx
+
+logger = logging.getLogger("terramind.geo")
+
 EARTH_RADIUS_M = 6378137.0  # WGS84 equatorial radius
+
+GEOCODING_URL = "https://geocoding-api.open-meteo.com/v1/search"
+_geocoding_client = httpx.AsyncClient(timeout=10.0)
+
+
+async def search_locations(query: str, count: int = 6) -> list[dict]:
+    """Resolve a free-text place query via the Open-Meteo geocoding API.
+
+    Same provider family as the weather service — no API key required.
+    Returns [] for short queries and on provider failures, so the Add
+    Farm form shows a "no results" state instead of erroring.
+    """
+    query = query.strip()
+    if len(query) < 2:
+        return []
+
+    try:
+        response = await _geocoding_client.get(
+            GEOCODING_URL,
+            params={
+                "name": query,
+                "count": count,
+                "language": "en",
+                "format": "json",
+            },
+        )
+        response.raise_for_status()
+        payload = response.json()
+    except (httpx.HTTPError, ValueError) as exc:
+        logger.warning("Location search failed for %r: %s", query, exc)
+        return []
+
+    results: list[dict] = []
+    for item in payload.get("results") or []:
+        parts = [
+            part
+            for part in (item.get("name"), item.get("admin1"), item.get("country"))
+            if part
+        ]
+        results.append(
+            {
+                "name": item.get("name", ""),
+                "admin1": item.get("admin1"),
+                "country": item.get("country"),
+                "latitude": float(item["latitude"]),
+                "longitude": float(item["longitude"]),
+                "label": ", ".join(parts),
+            }
+        )
+    return results
 
 Ring = list[list[float]]
 

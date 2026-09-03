@@ -61,7 +61,7 @@ export function FarmMap({
   fields,
   zoom = 14,
   height = 420,
-  basemap = "dark",
+  basemap = "satellite",
   onSelect,
 }: {
   center: { lat: number; lng: number };
@@ -202,7 +202,7 @@ export function DrawMap({
         style={{ height: "100%", width: "100%" }}
         scrollWheelZoom
       >
-        <TileLayer url={TILE_DARK.url} attribution={TILE_DARK.attribution} />
+        <TileLayer url={TILE_SATELLITE.url} attribution={TILE_SATELLITE.attribution} />
         <ClickCapture onAddPoint={handleAdd} />
 
         {positions.length > 0 ? (
