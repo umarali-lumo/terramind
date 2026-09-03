@@ -1,0 +1,24 @@
+# TerraMind — Render free-tier deployment dependencies.
+#
+# Identical to requirements.txt except the PyTorch / transformers AI stack is
+# omitted: Render's free web service has 512 MB RAM, which cannot host the
+# ResNet-50 disease model. Set DISEASE_MODEL_ENABLED=false on Render — every
+# other service (auth, farms, weather, health, irrigation, yield, alerts,
+# copilot, IoT) runs unchanged, and the disease API degrades gracefully to a
+# clear 503 "model_unavailable" response.
+#
+# Local / full installs (with the disease model) should use requirements.txt.
+
+fastapi>=0.110
+uvicorn[standard]>=0.29
+python-multipart>=0.0.9
+
+sqlalchemy>=2.0
+pydantic>=2.7
+pydantic-settings>=2.2
+
+PyJWT>=2.8
+
+httpx>=0.27
+
+pillow>=10.3

@@ -1,0 +1,32 @@
+# Render Blueprint — TerraMind API (free web service).
+#
+# Deploys the FastAPI backend. The SQLite database lives on the instance's
+# ephemeral disk and is re-seeded on every deploy via the start command, so
+# the public demo always has fresh demo data (demo@terramind.ai).
+#
+# Deploy: render.com dashboard -> New -> Blueprint -> select this repository.
+# (Or create a Web Service manually with the values below.)
+
+services:
+  - type: web
+    name: terramind-api
+    runtime: python
+    plan: free
+    region: oregon
+    branch: main
+    buildCommand: pip install -r requirements-render.txt
+    startCommand: cd backend && python -m app.seed && uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /api/health
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.11.9"
+      # Disease model needs >512 MB RAM (PyTorch) — disabled on the free tier.
+      # The API degrades gracefully: /api/v1/disease/* returns 503 model_unavailable.
+      - key: DISEASE_MODEL_ENABLED
+        value: "false"
+      # Auto-generated random secret — never committed to the repo.
+      - key: JWT_SECRET
+        generateValue: true
+      # Allow the Vercel frontend (+ local dev) to call this API.
+      - key: CORS_ORIGINS
+        value: https://frontend-psi-beige-33.vercel.app,https://frontend-6xglxmxow-lumo23.vercel.app,http://localhost:3000,http://127.0.0.1:3000

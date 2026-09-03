@@ -1,0 +1,2189 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>
+        TerraMind — Farm Intelligence
+    </title>
+
+
+    <!-- =====================================================
+         LEAFLET
+         ===================================================== -->
+
+    <link
+        rel="stylesheet"
+        href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    >
+
+
+    <!-- =====================================================
+         LEAFLET DRAW
+         ===================================================== -->
+
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css"
+    >
+
+
+    <!-- =====================================================
+         TERRAMIND
+         ===================================================== -->
+
+    <link
+        rel="stylesheet"
+        href="/style.css"
+    >
+
+</head>
+
+
+<body>
+
+
+<div class="app">
+
+
+    <!-- =====================================================
+         SIDEBAR
+         ===================================================== -->
+
+    <aside class="sidebar">
+
+
+        <div class="brand">
+
+            <div class="brand-mark">
+                T
+            </div>
+
+
+            <div>
+
+                <div class="brand-name">
+                    TerraMind
+                </div>
+
+
+                <div class="brand-subtitle">
+                    Farm Intelligence
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="sidebar-section">
+
+            <div class="section-label">
+                FARM
+            </div>
+
+
+            <button
+                class="farm-selector"
+                type="button"
+            >
+
+                <div class="farm-icon">
+                    ⌖
+                </div>
+
+
+                <div class="farm-info">
+
+                    <strong>
+                        Green Valley Farm
+                    </strong>
+
+
+                    <span
+                        id="farmLocation"
+                    >
+                        Pakistan
+                    </span>
+
+                </div>
+
+
+                <span class="chevron">
+                    ⌄
+                </span>
+
+            </button>
+
+        </div>
+
+
+        <nav class="navigation">
+
+
+            <button
+                class="nav-item active"
+                id="overviewNav"
+                type="button"
+                onclick="showOverview()"
+            >
+
+                <span>
+                    ◈
+                </span>
+
+                Overview
+
+            </button>
+
+
+            <button
+                class="nav-item"
+                id="digitalTwinNav"
+                type="button"
+                onclick="toggleDigitalTwin()"
+            >
+
+                <span>
+                    ◇
+                </span>
+
+                Digital Twin
+
+                <small
+                    id="dtNavState"
+                >
+                    OFF
+                </small>
+
+            </button>
+
+
+            <button
+                class="nav-item"
+                type="button"
+                onclick="showFieldAnalytics()"
+            >
+
+                <span>
+                    ⌁
+                </span>
+
+                Analytics
+
+            </button>
+
+
+            <button
+                class="nav-item"
+                type="button"
+                onclick="openAskAI()"
+            >
+
+                <span>
+                    ✦
+                </span>
+
+                Ask AI
+
+            </button>
+
+
+        </nav>
+
+
+        <div class="sidebar-bottom">
+
+
+            <div class="system-status">
+
+                <span class="status-dot"></span>
+
+
+                <div>
+
+                    <strong>
+                        TerraMind AI
+                    </strong>
+
+
+                    <span
+                        id="systemStatusText"
+                    >
+                        Starting...
+                    </span>
+
+                </div>
+
+            </div>
+
+
+            <button
+                class="settings-button"
+                type="button"
+            >
+                ⚙ Settings
+            </button>
+
+
+        </div>
+
+
+    </aside>
+
+
+
+    <!-- =====================================================
+         MAIN
+         ===================================================== -->
+
+    <main class="main">
+
+
+        <header class="topbar">
+
+
+            <div>
+
+                <div class="page-label">
+                    FARM OVERVIEW
+                </div>
+
+
+                <h1>
+                    Green Valley Farm
+                </h1>
+
+            </div>
+
+
+            <div class="top-actions">
+
+
+                <button
+                    class="add-field-button"
+                    type="button"
+                    onclick="startFieldCreation()"
+                >
+
+                    <span>
+                        ＋
+                    </span>
+
+                    Add Field
+
+                </button>
+
+
+                <button
+                    class="icon-button"
+                    type="button"
+                    title="Ask TerraMind"
+                    onclick="openAskAI()"
+                >
+                    ✦
+                </button>
+
+
+                <button
+                    class="notification"
+                    type="button"
+                >
+
+                    <span
+                        class="notification-dot"
+                    ></span>
+
+                    ♧
+
+                </button>
+
+
+                <div class="user-avatar">
+                    UA
+                </div>
+
+
+            </div>
+
+
+        </header>
+
+
+
+        <!-- =====================================================
+             WORKSPACE
+             ===================================================== -->
+
+        <section class="workspace">
+
+
+            <!-- =================================================
+                 MAP
+                 ================================================= -->
+
+            <div class="map-container">
+
+
+                <div id="map"></div>
+
+
+                <!-- SEARCH -->
+
+                <div class="map-search">
+
+
+                    <div class="search-wrapper">
+
+
+                        <span class="search-icon">
+                            ⌕
+                        </span>
+
+
+                        <input
+                            id="locationSearch"
+                            type="text"
+                            autocomplete="off"
+                            placeholder="Search city, district, village..."
+                            onkeydown="handleSearchKey(event)"
+                        >
+
+
+                        <button
+                            type="button"
+                            onclick="searchLocation()"
+                        >
+                            Search
+                        </button>
+
+
+                    </div>
+
+
+                </div>
+
+
+                <!-- GPS -->
+
+                <div class="location-tools">
+
+
+                    <button
+                        id="locationButton"
+                        type="button"
+                        title="Use current location"
+                        onclick="useCurrentLocation()"
+                    >
+                        ◎
+                    </button>
+
+
+                </div>
+
+
+                <!-- LOCATION STATUS -->
+
+                <div
+                    id="searchStatus"
+                    class="search-status"
+                >
+                    Search a location or use GPS
+                </div>
+
+
+
+                <!-- DRAW BANNER -->
+
+                <div
+                    id="drawingBanner"
+                    class="drawing-banner"
+                >
+
+
+                    <div class="drawing-icon">
+                        +
+                    </div>
+
+
+                    <div>
+
+                        <strong>
+                            Define your field boundary
+                        </strong>
+
+
+                        <span>
+                            Click around the field and close the polygon.
+                        </span>
+
+                    </div>
+
+
+                    <button
+                        type="button"
+                        onclick="cancelFieldCreation()"
+                    >
+                        Cancel
+                    </button>
+
+
+                </div>
+
+
+
+                <!-- MAP CONTROLS -->
+
+                <div class="map-controls">
+
+
+                    <button
+                        type="button"
+                        onclick="zoomIn()"
+                    >
+                        +
+                    </button>
+
+
+                    <button
+                        type="button"
+                        onclick="zoomOut()"
+                    >
+                        −
+                    </button>
+
+
+                </div>
+
+
+
+                <!-- MAP MODE -->
+
+                <div class="map-mode">
+
+
+                    <button
+                        id="satelliteMode"
+                        type="button"
+                        class="map-mode-active"
+                        onclick="setMapMode('satellite')"
+                    >
+                        Satellite
+                    </button>
+
+
+                    <button
+                        id="digitalMode"
+                        type="button"
+                        onclick="setMapMode('digital')"
+                    >
+                        Digital Twin
+                    </button>
+
+
+                    <button
+                        id="riskMode"
+                        type="button"
+                        onclick="setMapMode('risk')"
+                    >
+                        Risk
+                    </button>
+
+
+                </div>
+
+
+
+                <!-- LEGEND -->
+
+                <div
+                    id="digitalLegend"
+                    class="digital-legend hidden"
+                >
+
+
+                    <div class="legend-title">
+                        CROP CONDITION
+                    </div>
+
+
+                    <div>
+
+                        <span
+                            class="legend-dot healthy"
+                        ></span>
+
+                        Healthy
+
+                    </div>
+
+
+                    <div>
+
+                        <span
+                            class="legend-dot moderate"
+                        ></span>
+
+                        Moderate
+
+                    </div>
+
+
+                    <div>
+
+                        <span
+                            class="legend-dot risk"
+                        ></span>
+
+                        High Risk
+
+                    </div>
+
+
+                </div>
+
+
+
+                <!-- MAP INFO -->
+
+                <div class="map-info">
+
+
+                    <div class="map-info-title">
+                        DIGITAL TWIN
+                    </div>
+
+
+                    <div class="map-info-row">
+
+                        <span>
+                            Area
+                        </span>
+
+
+                        <strong
+                            id="farmArea"
+                        >
+                            0 acres
+                        </strong>
+
+                    </div>
+
+
+                    <div class="map-info-row">
+
+                        <span>
+                            Fields
+                        </span>
+
+
+                        <strong
+                            id="fieldCount"
+                        >
+                            0
+                        </strong>
+
+                    </div>
+
+
+                    <div class="map-info-row">
+
+                        <span>
+                            Location
+                        </span>
+
+
+                        <strong
+                            id="mapCoordinates"
+                        >
+                            Pakistan
+                        </strong>
+
+                    </div>
+
+
+                </div>
+
+
+            </div>
+
+
+
+            <!-- =================================================
+                 INSIGHT PANEL
+                 ================================================= -->
+
+            <aside class="insight-panel">
+
+
+                <!-- FARM HEALTH -->
+
+                <div class="panel-card health-card">
+
+
+                    <div class="card-header">
+
+
+                        <div>
+
+                            <span class="eyebrow">
+                                FARM HEALTH
+                            </span>
+
+
+                            <h2>
+                                Overall Condition
+                            </h2>
+
+                        </div>
+
+
+                        <span class="live-pill">
+                            LIVE
+                        </span>
+
+
+                    </div>
+
+
+                    <div class="health-score">
+
+
+                        <div class="score-ring">
+
+
+                            <div>
+
+                                <strong
+                                    id="farmHealth"
+                                >
+                                    —
+                                </strong>
+
+
+                                <span>
+                                    /100
+                                </span>
+
+                            </div>
+
+
+                        </div>
+
+
+                        <div class="health-text">
+
+
+                            <strong
+                                id="farmHealthStatus"
+                            >
+                                No Fields
+                            </strong>
+
+
+                            <span
+                                id="healthTrend"
+                            >
+                                Create a field to begin
+                            </span>
+
+
+                        </div>
+
+
+                    </div>
+
+
+                </div>
+
+
+
+                <!-- WEATHER -->
+
+                <div class="panel-card">
+
+
+                    <div class="card-header">
+
+
+                        <div>
+
+                            <span class="eyebrow">
+                                ENVIRONMENT
+                            </span>
+
+
+                            <h2>
+                                Weather
+                            </h2>
+
+
+                        </div>
+
+
+                        <span class="weather-icon">
+                            ☀
+                        </span>
+
+
+                    </div>
+
+
+                    <div class="weather-main">
+
+
+                        <strong
+                            id="weatherTemperature"
+                        >
+                            --
+                        </strong>
+
+
+                        <div>
+
+                            <span
+                                id="weatherDescription"
+                            >
+                                Loading...
+                            </span>
+
+
+                            <small
+                                id="weatherLocation"
+                            >
+                                Pakistan
+                            </small>
+
+
+                        </div>
+
+
+                    </div>
+
+
+                    <div class="weather-grid">
+
+
+                        <div>
+
+                            <span>
+                                Humidity
+                            </span>
+
+
+                            <strong
+                                id="weatherHumidity"
+                            >
+                                --
+                            </strong>
+
+
+                        </div>
+
+
+                        <div>
+
+                            <span>
+                                Rain
+                            </span>
+
+
+                            <strong
+                                id="weatherRain"
+                            >
+                                --
+                            </strong>
+
+
+                        </div>
+
+
+                        <div>
+
+                            <span>
+                                Wind
+                            </span>
+
+
+                            <strong
+                                id="weatherWind"
+                            >
+                                --
+                            </strong>
+
+
+                        </div>
+
+
+                    </div>
+
+
+                    <div class="weather-source">
+
+                        <span
+                            id="weatherUpdated"
+                        >
+                            Weather API
+                        </span>
+
+                    </div>
+
+
+                </div>
+
+
+
+                <!-- WEATHER INTELLIGENCE -->
+
+                <div
+                    class="panel-card environment-card"
+                >
+
+
+                    <div class="card-header">
+
+
+                        <div>
+
+                            <span class="eyebrow">
+                                WEATHER INTELLIGENCE
+                            </span>
+
+
+                            <h2>
+                                Field Environment
+                            </h2>
+
+                        </div>
+
+
+                        <span
+                            id="environmentRiskPill"
+                            class="risk-pill low"
+                        >
+                            LOW
+                        </span>
+
+
+                    </div>
+
+
+                    <div
+                        class="environment-score-row"
+                    >
+
+
+                        <div>
+
+                            <span>
+                                Stress Index
+                            </span>
+
+
+                            <strong
+                                id="environmentStress"
+                            >
+                                —
+                            </strong>
+
+                        </div>
+
+
+                        <div>
+
+                            <span>
+                                Disease Pressure
+                            </span>
+
+
+                            <strong
+                                id="environmentDiseasePressure"
+                            >
+                                —
+                            </strong>
+
+                        </div>
+
+
+                        <div>
+
+                            <span>
+                                Irrigation Pressure
+                            </span>
+
+
+                            <strong
+                                id="environmentIrrigationPressure"
+                            >
+                                —
+                            </strong>
+
+                        </div>
+
+
+                    </div>
+
+
+                    <p
+                        id="environmentInsight"
+                        class="environment-insight"
+                    >
+                        Select or create a field to generate
+                        weather-driven intelligence.
+                    </p>
+
+
+                </div>
+
+
+
+                <!-- ALERT -->
+
+                <div
+                    class="panel-card alert-card"
+                >
+
+
+                    <div class="alert-header">
+
+
+                        <span class="alert-symbol">
+                            !
+                        </span>
+
+
+                        <div>
+
+                            <span class="eyebrow">
+                                AI ALERT
+                            </span>
+
+
+                            <h2
+                                id="alertTitle"
+                            >
+                                Monitoring farm
+                            </h2>
+
+                        </div>
+
+                    </div>
+
+
+                    <p
+                        id="alertText"
+                    >
+                        Register a field to receive
+                        TerraMind intelligence.
+                    </p>
+
+
+                    <button
+                        class="primary-button"
+                        type="button"
+                        onclick="openSelectedRiskField()"
+                    >
+
+                        View Field Intelligence
+
+                        <span>
+                            →
+                        </span>
+
+                    </button>
+
+
+                </div>
+
+
+
+                <!-- 72 HOUR -->
+
+                <div class="panel-card">
+
+
+                    <div class="card-header">
+
+
+                        <div>
+
+                            <span class="eyebrow">
+                                PREDICTIVE AI
+                            </span>
+
+
+                            <h2>
+                                72-Hour Outlook
+                            </h2>
+
+
+                        </div>
+
+
+                        <span
+                            id="forecastRisk"
+                            class="forecast-risk"
+                        >
+                            MONITORING
+                        </span>
+
+
+                    </div>
+
+
+                    <div class="forecast">
+
+
+                        <div class="forecast-item">
+
+                            <span>
+                                NOW
+                            </span>
+
+
+                            <strong
+                                id="forecastNow"
+                            >
+                                —
+                            </strong>
+
+
+                        </div>
+
+
+                        <div class="forecast-line"></div>
+
+
+                        <div class="forecast-item">
+
+                            <span>
+                                24H
+                            </span>
+
+
+                            <strong
+                                id="forecast24"
+                            >
+                                —
+                            </strong>
+
+
+                        </div>
+
+
+                        <div class="forecast-line"></div>
+
+
+                        <div class="forecast-item">
+
+                            <span>
+                                48H
+                            </span>
+
+
+                            <strong
+                                id="forecast48"
+                            >
+                                —
+                            </strong>
+
+
+                        </div>
+
+
+                        <div class="forecast-line"></div>
+
+
+                        <div class="forecast-item danger">
+
+                            <span>
+                                72H
+                            </span>
+
+
+                            <strong
+                                id="forecast72"
+                            >
+                                —
+                            </strong>
+
+
+                        </div>
+
+
+                    </div>
+
+
+                </div>
+
+
+
+                <!-- RECOMMENDATION -->
+
+                <div
+                    class="panel-card recommendation-card"
+                >
+
+
+                    <div class="card-header">
+
+
+                        <div>
+
+                            <span class="eyebrow">
+                                AI RECOMMENDATION
+                            </span>
+
+
+                            <h2>
+                                Action Required
+                            </h2>
+
+                        </div>
+
+
+                        <span class="sparkle">
+                            ✦
+                        </span>
+
+
+                    </div>
+
+
+                    <p
+                        id="mainRecommendation"
+                    >
+                        Register a field to receive
+                        TerraMind recommendations.
+                    </p>
+
+
+                    <div
+                        class="recommendation-meta"
+                    >
+
+                        <span>
+                            Confidence
+                        </span>
+
+
+                        <strong
+                            id="recommendationConfidence"
+                        >
+                            —
+                        </strong>
+
+                    </div>
+
+
+                </div>
+
+
+
+                <!-- ASK AI -->
+
+                <div
+                    class="panel-card ask-ai-card"
+                >
+
+
+                    <div class="ask-ai-header">
+
+
+                        <div>
+
+                            <span class="eyebrow">
+                                TERRAMIND COPILOT
+                            </span>
+
+
+                            <h2>
+                                Ask AI
+                            </h2>
+
+                        </div>
+
+
+                        <span class="sparkle">
+                            ✦
+                        </span>
+
+
+                    </div>
+
+
+                    <p>
+                        Ask TerraMind about your farm,
+                        crop health, weather, risk,
+                        disease or irrigation.
+                    </p>
+
+
+                    <button
+                        class="ask-ai-button"
+                        type="button"
+                        onclick="openAskAI()"
+                    >
+
+                        Ask TerraMind
+
+                        <span>
+                            →
+                        </span>
+
+                    </button>
+
+
+                </div>
+
+
+            </aside>
+
+        </section>
+
+    </main>
+
+</div>
+
+
+
+<!-- =====================================================
+     CREATE FIELD MODAL
+     ===================================================== -->
+
+<div
+    id="createFieldModal"
+    class="modal"
+>
+
+
+    <div
+        class="modal-overlay"
+        onclick="closeCreateFieldModal()"
+    ></div>
+
+
+    <div
+        class="create-field-modal"
+    >
+
+
+        <button
+            class="modal-close"
+            type="button"
+            onclick="closeCreateFieldModal()"
+        >
+            ×
+        </button>
+
+
+        <div class="create-title">
+
+
+            <span class="eyebrow">
+                NEW DIGITAL TWIN
+            </span>
+
+
+            <h2>
+                Create Field
+            </h2>
+
+
+            <p>
+                Define the field TerraMind should monitor.
+            </p>
+
+
+        </div>
+
+
+        <div class="form-group">
+
+
+            <label>
+                FIELD NAME
+            </label>
+
+
+            <input
+                id="fieldName"
+                type="text"
+                placeholder="e.g. North Tomato Field"
+            >
+
+
+        </div>
+
+
+        <div class="form-group">
+
+
+            <label>
+                CROP
+            </label>
+
+
+            <select
+                id="cropType"
+            >
+
+                <option value="Tomato">
+                    Tomato
+                </option>
+
+                <option value="Wheat">
+                    Wheat
+                </option>
+
+                <option value="Rice">
+                    Rice
+                </option>
+
+                <option value="Maize">
+                    Maize
+                </option>
+
+                <option value="Cotton">
+                    Cotton
+                </option>
+
+                <option value="Sugarcane">
+                    Sugarcane
+                </option>
+
+                <option value="Other">
+                    Other
+                </option>
+
+            </select>
+
+
+        </div>
+
+
+        <div class="field-measurements">
+
+
+            <div>
+
+                <span>
+                    AREA
+                </span>
+
+
+                <strong
+                    id="newFieldArea"
+                >
+                    —
+                </strong>
+
+            </div>
+
+
+            <div>
+
+                <span>
+                    PERIMETER
+                </span>
+
+
+                <strong
+                    id="newFieldPerimeter"
+                >
+                    —
+                </strong>
+
+            </div>
+
+
+            <div>
+
+                <span>
+                    CENTER
+                </span>
+
+
+                <strong
+                    id="newFieldCoordinates"
+                >
+                    —
+                </strong>
+
+            </div>
+
+
+        </div>
+
+
+        <div class="modal-actions">
+
+
+            <button
+                class="secondary-button"
+                type="button"
+                onclick="closeCreateFieldModal()"
+            >
+                Cancel
+            </button>
+
+
+            <button
+                id="saveFieldButton"
+                class="save-field-button disabled"
+                type="button"
+                onclick="saveNewField()"
+                disabled
+            >
+                Save Field
+            </button>
+
+
+        </div>
+
+
+    </div>
+
+</div>
+
+
+
+<!-- =====================================================
+     FIELD INTELLIGENCE
+     ===================================================== -->
+
+<div
+    id="fieldModal"
+    class="modal"
+>
+
+
+    <div
+        class="modal-overlay"
+        onclick="closeFieldModal()"
+    ></div>
+
+
+    <div class="field-modal">
+
+
+        <button
+            class="modal-close"
+            type="button"
+            onclick="closeFieldModal()"
+        >
+            ×
+        </button>
+
+
+        <div class="field-modal-header">
+
+
+            <div>
+
+                <span class="eyebrow">
+                    FIELD INTELLIGENCE
+                </span>
+
+
+                <h2
+                    id="fieldModalName"
+                >
+                    Field
+                </h2>
+
+
+                <span
+                    id="fieldModalCrop"
+                    class="crop-label"
+                >
+                    Crop
+                </span>
+
+
+            </div>
+
+
+            <div class="field-score">
+
+                <strong
+                    id="fieldModalHealth"
+                >
+                    —
+                </strong>
+
+
+                <span>
+                    /100
+                </span>
+
+            </div>
+
+        </div>
+
+
+
+        <!-- COMPUTER VISION -->
+
+        <div
+            class="disease-result-card"
+        >
+
+
+            <div class="disease-result-top">
+
+
+                <div>
+
+                    <span class="eyebrow">
+                        COMPUTER VISION
+                    </span>
+
+
+                    <h3
+                        id="diseaseResultTitle"
+                    >
+                        No crop image analyzed
+                    </h3>
+
+
+                    <span
+                        id="diseaseResultConfidence"
+                    >
+                        Upload a leaf image
+                    </span>
+
+                </div>
+
+
+                <div
+                    id="diseaseResultScore"
+                    class="disease-score"
+                >
+                    —
+                </div>
+
+
+            </div>
+
+
+            <div
+                class="disease-result-image-wrap"
+            >
+
+
+                <img
+                    id="diseasePreview"
+                    class="disease-preview hidden"
+                    alt="Crop image preview"
+                >
+
+
+                <div
+                    id="diseasePlaceholder"
+                    class="disease-placeholder"
+                >
+
+                    <div>
+                        ＋
+                    </div>
+
+
+                    <span>
+                        Upload a leaf image
+                    </span>
+
+
+                </div>
+
+
+            </div>
+
+
+            <div
+                class="disease-actions"
+            >
+
+
+                <button
+                    class="analyze-image-button"
+                    type="button"
+                    onclick="openDiseaseFilePicker()"
+                >
+
+                    Analyze Crop Image
+
+                    <span>
+                        ✦
+                    </span>
+
+
+                </button>
+
+
+                <input
+                    id="diseaseImageInput"
+                    class="hidden-input"
+                    type="file"
+                    accept="image/*"
+                    onchange="handleDiseaseImage(event)"
+                >
+
+
+            </div>
+
+
+            <div
+                id="diseaseStatus"
+                class="disease-status"
+            >
+                Computer vision ready.
+            </div>
+
+
+        </div>
+
+
+
+        <!-- FIELD RISK -->
+
+        <div class="risk-banner">
+
+
+            <div class="risk-icon">
+                !
+            </div>
+
+
+            <div>
+
+                <strong
+                    id="fieldRiskTitle"
+                >
+                    Field Analysis
+                </strong>
+
+
+                <span
+                    id="fieldRiskDescription"
+                >
+                    —
+                </span>
+
+            </div>
+
+
+        </div>
+
+
+
+        <!-- FIELD METRICS -->
+
+        <div class="field-grid">
+
+
+            <div class="metric">
+
+
+                <span>
+                    Disease Risk
+                </span>
+
+
+                <strong
+                    id="fieldDiseaseRisk"
+                    class="danger-text"
+                >
+                    —
+                </strong>
+
+
+            </div>
+
+
+            <div class="metric">
+
+
+                <span>
+                    Water Stress
+                </span>
+
+
+                <strong
+                    id="fieldWaterStress"
+                >
+                    —
+                </strong>
+
+
+            </div>
+
+
+            <div class="metric">
+
+
+                <span>
+                    Environment
+                </span>
+
+
+                <strong
+                    id="fieldEnvironmentStress"
+                >
+                    —
+                </strong>
+
+
+            </div>
+
+
+            <div class="metric">
+
+
+                <span>
+                    Area
+                </span>
+
+
+                <strong
+                    id="fieldArea"
+                >
+                    —
+                </strong>
+
+
+            </div>
+
+
+        </div>
+
+
+
+        <!-- PREDICTION -->
+
+        <div
+            class="prediction-section"
+        >
+
+
+            <div class="prediction-title">
+                72-Hour Health Prediction
+            </div>
+
+
+            <div class="prediction-chart">
+
+
+                <div class="chart-label">
+                    NOW
+                </div>
+
+
+                <div class="prediction-column">
+
+
+                    <div
+                        id="chartNow"
+                        class="chart-bar"
+                    ></div>
+
+
+                    <span
+                        id="chartNowValue"
+                    >
+                        —
+                    </span>
+
+
+                </div>
+
+
+                <div class="prediction-column">
+
+
+                    <div
+                        id="chart24"
+                        class="chart-bar"
+                    ></div>
+
+
+                    <span
+                        id="chart24Value"
+                    >
+                        —
+                    </span>
+
+
+                </div>
+
+
+                <div class="prediction-column">
+
+
+                    <div
+                        id="chart48"
+                        class="chart-bar"
+                    ></div>
+
+
+                    <span
+                        id="chart48Value"
+                    >
+                        —
+                    </span>
+
+
+                </div>
+
+
+                <div class="prediction-column">
+
+
+                    <div
+                        id="chart72"
+                        class="chart-bar danger-bar"
+                    ></div>
+
+
+                    <span
+                        id="chart72Value"
+                    >
+                        —
+                    </span>
+
+
+                </div>
+
+
+            </div>
+
+
+        </div>
+
+
+
+        <!-- RECOMMENDATION -->
+
+        <div
+            class="recommendation-large"
+        >
+
+
+            <span class="eyebrow">
+                TERRAMIND RECOMMENDS
+            </span>
+
+
+            <h3
+                id="fieldRecommendationTitle"
+            >
+                Monitoring
+            </h3>
+
+
+            <p
+                id="fieldRecommendation"
+            >
+                —
+            </p>
+
+
+        </div>
+
+
+
+        <!-- ACTIONS -->
+
+        <div
+            class="field-modal-actions"
+        >
+
+
+            <button
+                class="field-focus-button"
+                type="button"
+                onclick="focusSelectedField()"
+            >
+                Focus Field
+            </button>
+
+
+            <button
+                class="field-delete-button"
+                type="button"
+                onclick="requestDeleteField()"
+            >
+                Delete Field
+            </button>
+
+
+        </div>
+
+
+    </div>
+
+</div>
+
+
+
+<!-- =====================================================
+     DELETE
+     ===================================================== -->
+
+<div
+    id="deleteModal"
+    class="modal"
+>
+
+
+    <div
+        class="modal-overlay"
+        onclick="closeDeleteModal()"
+    ></div>
+
+
+    <div class="delete-modal">
+
+
+        <div class="delete-icon">
+            !
+        </div>
+
+
+        <h2>
+            Delete this field?
+        </h2>
+
+
+        <p>
+
+            This permanently removes
+
+            <strong
+                id="deleteFieldName"
+            >
+                this field
+            </strong>
+
+            and its digital twin data.
+
+        </p>
+
+
+        <div class="delete-actions">
+
+
+            <button
+                class="secondary-button"
+                type="button"
+                onclick="closeDeleteModal()"
+            >
+                Cancel
+            </button>
+
+
+            <button
+                class="delete-confirm-button"
+                type="button"
+                onclick="confirmDeleteField()"
+            >
+                Delete Field
+            </button>
+
+
+        </div>
+
+
+    </div>
+
+</div>
+
+
+
+<!-- =====================================================
+     ASK AI
+     ===================================================== -->
+
+<div
+    id="askAIModal"
+    class="ask-ai-modal"
+>
+
+
+    <div
+        class="ask-ai-overlay"
+        onclick="closeAskAI()"
+    ></div>
+
+
+    <div class="ask-ai-window">
+
+
+        <div
+            class="ask-ai-window-header"
+        >
+
+
+            <div>
+
+                <span class="eyebrow">
+                    TERRAMIND COPILOT
+                </span>
+
+
+                <h2>
+                    Ask AI
+                </h2>
+
+
+                <span>
+                    Ask anything about your farm.
+                </span>
+
+            </div>
+
+
+            <button
+                class="modal-close"
+                type="button"
+                onclick="closeAskAI()"
+            >
+                ×
+            </button>
+
+
+        </div>
+
+
+        <div
+            id="aiMessages"
+            class="ai-messages"
+        >
+
+
+            <div class="ai-message assistant">
+
+
+                <div class="ai-avatar">
+                    T
+                </div>
+
+
+                <div class="ai-bubble">
+
+                    I'm TerraMind. Ask me about
+                    crop health, weather, disease,
+                    irrigation, risk, or what to do next.
+
+                </div>
+
+
+            </div>
+
+
+        </div>
+
+
+        <div
+            class="ai-suggestions"
+        >
+
+
+            <button
+                type="button"
+                onclick="askSuggestion('Which field needs attention first?')"
+            >
+                Highest risk field
+            </button>
+
+
+            <button
+                type="button"
+                onclick="askSuggestion('What is the current weather?')"
+            >
+                Current weather
+            </button>
+
+
+            <button
+                type="button"
+                onclick="askSuggestion('Which field has the highest disease risk?')"
+            >
+                Disease risk
+            </button>
+
+
+            <button
+                type="button"
+                onclick="askSuggestion('What should I do today?')"
+            >
+                What should I do today?
+            </button>
+
+
+        </div>
+
+
+        <div class="ai-input-row">
+
+
+            <input
+                id="aiInput"
+                type="text"
+                placeholder="Ask TerraMind..."
+                onkeydown="handleAIKey(event)"
+            >
+
+
+            <button
+                type="button"
+                onclick="sendAIMessage()"
+            >
+                →
+            </button>
+
+
+        </div>
+
+
+    </div>
+
+</div>
+
+
+
+<!-- =====================================================
+     LEAFLET
+     ===================================================== -->
+
+<script
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+></script>
+
+
+<!-- =====================================================
+     LEAFLET DRAW
+     ===================================================== -->
+
+<script
+    src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"
+></script>
+
+
+<!-- =====================================================
+     TERRAMIND
+     ===================================================== -->
+
+<script src="/script.js"></script>
+
+
+</body>
+
+</html>

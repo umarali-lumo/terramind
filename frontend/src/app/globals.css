@@ -1,0 +1,152 @@
+@import "tailwindcss";
+
+/*
+ * TerraMind design system — dark agri-intel aesthetic.
+ * Semantic, agricultural color names: canopy (backgrounds), sprout
+ * (primary green), moss (text), earth (soil accents), harvest (warning),
+ * blaze (critical), rain (info blue).
+ */
+@theme {
+  /* Canopy — layered deep-green backgrounds */
+  --color-canopy-950: #04100a;
+  --color-canopy-900: #071811;
+  --color-canopy-850: #0a2016;
+  --color-canopy-800: #0e2a1d;
+  --color-canopy-700: #143826;
+  --color-canopy-600: #1c4a32;
+  --color-canopy-500: #275c3f;
+
+  /* Sprout — primary accent green */
+  --color-sprout-200: #b9f5cd;
+  --color-sprout-300: #86efac;
+  --color-sprout-400: #4ade80;
+  --color-sprout-500: #34d071;
+  --color-sprout-600: #22b45b;
+  --color-sprout-700: #1b8a47;
+
+  /* Moss — foreground text */
+  --color-moss-50: #f2faf5;
+  --color-moss-100: #e4f3ea;
+  --color-moss-200: #c9e3d3;
+  --color-moss-300: #a3c9b2;
+  --color-moss-400: #7dab8e;
+  --color-moss-500: #5f8d72;
+  --color-moss-600: #4a7159;
+
+  /* Earth — soil / secondary accents */
+  --color-earth-300: #d9c4a3;
+  --color-earth-400: #c4a475;
+  --color-earth-500: #a8855a;
+  --color-earth-600: #8b6f47;
+
+  /* Harvest — warning amber */
+  --color-harvest-300: #ffd98a;
+  --color-harvest-400: #f5b942;
+  --color-harvest-500: #e8a317;
+
+  /* Blaze — critical red */
+  --color-blaze-300: #f9a3ab;
+  --color-blaze-400: #f0616d;
+  --color-blaze-500: #e44d5c;
+
+  /* Rain — info blue */
+  --color-rain-300: #9cc8fb;
+  --color-rain-400: #5ba8f5;
+  --color-rain-500: #3b8ee9;
+
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+}
+
+html {
+  color-scheme: dark;
+}
+
+body {
+  background: var(--color-canopy-950);
+  color: var(--color-moss-100);
+  font-family: var(--font-sans);
+}
+
+/* Subtle radial canopy glow behind the app shell */
+.tm-bg-glow {
+  background:
+    radial-gradient(
+      1100px 500px at 15% -10%,
+      rgba(52, 208, 113, 0.07),
+      transparent 60%
+    ),
+    radial-gradient(
+      900px 420px at 110% 10%,
+      rgba(168, 133, 90, 0.05),
+      transparent 55%
+    );
+}
+
+/* Scrollbars */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-canopy-600) transparent;
+}
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+*::-webkit-scrollbar-thumb {
+  background: var(--color-canopy-600);
+  border-radius: 8px;
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* Leaflet map theming */
+.leaflet-container {
+  background: var(--color-canopy-900);
+  font-family: var(--font-sans);
+}
+.leaflet-control-attribution {
+  background: rgba(7, 24, 17, 0.75) !important;
+  color: var(--color-moss-400) !important;
+  font-size: 10px !important;
+}
+.leaflet-control-attribution a {
+  color: var(--color-moss-300) !important;
+}
+.leaflet-bar a {
+  background: var(--color-canopy-800) !important;
+  color: var(--color-moss-200) !important;
+  border-color: var(--color-canopy-600) !important;
+}
+.leaflet-bar a:hover {
+  background: var(--color-canopy-700) !important;
+}
+.leaflet-popup-content-wrapper,
+.leaflet-popup-tip {
+  background: var(--color-canopy-800) !important;
+  color: var(--color-moss-100) !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45) !important;
+}
+
+/* Recharts focus outline cleanup */
+.recharts-wrapper svg:focus,
+.recharts-surface:focus {
+  outline: none;
+}
+
+/* Chat markdown-ish rendering (copilot replies) */
+.tm-prose p {
+  margin-bottom: 0.5rem;
+}
+.tm-prose p:last-child {
+  margin-bottom: 0;
+}
+.tm-prose strong {
+  color: var(--color-sprout-300);
+  font-weight: 600;
+}
+
+/* Number tabular alignment for stats */
+.tm-num {
+  font-variant-numeric: tabular-nums;
+}

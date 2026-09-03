@@ -1,0 +1,28 @@
+# --- Python ---
+.venv/
+__pycache__/
+*.pyc
+
+# --- Local databases & uploads (re-created by app.seed on demand) ---
+backend/terramind.db
+backend/uploads/
+
+# --- Node / Next.js ---
+node_modules/
+frontend/.next/
+frontend/out/
+
+# --- Secrets ---
+.env
+.env.local
+.env*.local
+
+# --- Deploy tooling scratch ---
+.vercel-tmp/
+
+# --- Local test screenshots at repo root ---
+/*.png
+
+# --- OS ---
+Thumbs.db
+.DS_Store

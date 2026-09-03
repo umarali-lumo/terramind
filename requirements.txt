@@ -1,0 +1,28 @@
+# TerraMind v2 — Python backend dependencies
+# Install PyTorch first from the CPU wheel index if needed:
+#   pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
+
+# Web framework
+fastapi>=0.110
+uvicorn[standard]>=0.29
+python-multipart>=0.0.9
+
+# Data & validation
+sqlalchemy>=2.0
+pydantic>=2.7
+pydantic-settings>=2.2
+
+# Auth
+PyJWT>=2.8
+
+# HTTP client (weather providers, LLM copilot)
+httpx>=0.27
+
+# Imaging
+pillow>=10.3
+
+# AI — disease detection
+transformers>=4.40
+safetensors>=0.4
+torch>=2.2
+torchvision>=0.17
