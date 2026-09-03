@@ -1,0 +1,21 @@
+# Container deployment dependencies — pinned to the exact versions
+# running locally (see .venv) so the public demo behaves identically.
+# torch/torchvision are installed separately from the CPU wheel index
+# in Dockerfile.vercel.
+
+fastapi==0.141.1
+uvicorn==0.52.3
+python-multipart==0.0.32
+SQLAlchemy==2.0.52
+pydantic==2.13.4
+pydantic-settings==2.15.0
+email-validator==2.3.0
+PyJWT==2.13.0
+httpx==0.28.1
+
+pillow==12.3.0
+numpy==2.4.6
+transformers==5.15.0
+tokenizers==0.22.2
+huggingface_hub==1.27.0
+safetensors==0.8.0

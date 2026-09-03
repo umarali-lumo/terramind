@@ -1,0 +1,42 @@
+# TerraMind backend — container build for Vercel (Dockerfile.vercel).
+#
+# Ships the full AI stack (PyTorch CPU + transformers) with the disease
+# model weights baked in at build time, so the public deployment runs the
+# real disease classifier with no runtime model downloads.
+
+FROM python:3.11-slim
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    HF_HOME=/opt/hf-cache
+
+# libgomp1 is required by PyTorch CPU wheels on slim base images.
+RUN apt-get update && apt-get install -y --no-install-recommends libgomp1 \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+# Dependencies first so source changes don't invalidate the pip layers.
+# torch/torchvision come from the CPU wheel index in their own layer;
+# layers are split to stay under the 500MB-per-layer registry limit.
+COPY requirements-docker.txt .
+RUN pip install --no-cache-dir \
+    --extra-index-url https://download.pytorch.org/whl/cpu \
+    torch==2.12.1 torchvision==0.27.1
+
+RUN pip install --no-cache-dir -r requirements-docker.txt
+
+# Bake the disease-model weights into the image at build time.
+COPY _download_model.py .
+RUN python _download_model.py
+
+# Runtime never needs the network — the model loads from the local cache.
+ENV HF_HUB_OFFLINE=1 \
+    TRANSFORMERS_OFFLINE=1
+
+COPY app ./app
+
+EXPOSE 80
+
+# Seed the demo database, then serve. Vercel injects PORT (default 80).
+CMD ["sh", "-c", "python -m app.seed && uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-80}"]
