@@ -1,9 +1,11 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "functions": {
-    "asgi.py": {
-      "maxDuration": 60,
-      "excludeFiles": "{terramind.db,uploads/**,_deploy_check.py,__pycache__/**,**/__pycache__/**,**/*.pyc}"
+  "builds": [
+    {
+      "src": "api/index.py",
+      "use": "@vercel/python",
+      "config": { "maxLambdaSize": "50mb" }
     }
-  }
+  ],
+  "routes": [{ "src": "/(.*)", "dest": "api/index.py" }]
 }
