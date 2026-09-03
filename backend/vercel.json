@@ -1,0 +1,9 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "functions": {
+    "asgi.py": {
+      "maxDuration": 60,
+      "excludeFiles": "{terramind.db,uploads/**,_deploy_check.py,__pycache__/**,**/__pycache__/**,**/*.pyc}"
+    }
+  }
+}

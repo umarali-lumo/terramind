@@ -19,6 +19,7 @@ frontend/out/
 
 # --- Deploy tooling scratch ---
 .vercel-tmp/
+.vercel/
 
 # --- Local test screenshots at repo root ---
 /*.png
